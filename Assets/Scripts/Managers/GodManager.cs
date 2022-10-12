@@ -31,6 +31,7 @@ public class GodManager : MonoBehaviour
             {
                 if (hit.collider.gameObject.layer == _buttonLayer)
                 {
+                    Debug.Log("aaa");
                     DefaultButtonPos = hit.collider.transform.localPosition;
                     SelectedButton = hit.collider.gameObject.GetComponent<ButtonController>();
                 }
@@ -50,11 +51,12 @@ public class GodManager : MonoBehaviour
             _isDragable = false;
             RaycastHit hit;
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+
             if (Physics.Raycast(ray, out hit, 1000.0f, _layerMask))
             {
                 if (hit.collider.gameObject.layer == _buttonMergeArea)
                 {
-                    ButtonDropMergeArea(hit.collider.transform.position);
+                    ButtonDropMergeArea(hit.collider.transform.position, hit.collider.gameObject);
                 }
             }
             else
@@ -66,7 +68,7 @@ public class GodManager : MonoBehaviour
 
     private void DragButton()
     {
-        float planeY = 0.5f;
+        float planeY = 1.0f;
         Plane plane = new Plane(Vector3.up, Vector3.up * planeY); // ground plane
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
         float distance;
@@ -101,11 +103,23 @@ public class GodManager : MonoBehaviour
         SelectedButton = null;
     }
 
-    private void ButtonDropMergeArea(Vector3 areaPos)
+    private void ButtonDropMergeArea(Vector3 areaPos, GameObject mergeArea)
     {
-        SelectedButton.transform.localPosition = areaPos;
-        SelectedButton.gameObject.layer = _buttonLayer;
-        SelectedButton.Clickable = true;
-        SelectedButton = null;
+        MergeArea area = mergeArea.GetComponent<MergeArea>();
+        if (area.AreaState == MergeArea.AreaStates.Empty)
+        {
+            area.AreaSetButton(SelectedButton);
+            SelectedButton.transform.position = areaPos;
+            SelectedButton.gameObject.layer = _buttonLayer;
+            SelectedButton.Clickable = true;
+            SelectedButton.ButtonState = ButtonController.ButtonStates.MergedArea;
+            SelectedButton = null;
+        }
+        else
+        {
+            Destroy(SelectedButton.gameObject);
+            area.CurrentButton.MergeUpgrade();
+      
+        }
     }
 }

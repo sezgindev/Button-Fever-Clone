@@ -9,6 +9,24 @@ public class ButtonController : MonoBehaviour
     private bool _isClickable = true;
     private float _multiply = 1.0f;
     private ParticleManager _particleManager;
+    public ButtonTypes ButtonType;
+    public ButtonStates ButtonState;
+    [SerializeField] private GameObject[] _buttons;
+
+    public enum ButtonTypes
+    {
+        x1,
+        x2,
+        x4,
+        x8,
+        x16
+    }
+
+    public enum ButtonStates
+    {
+        OnBoard,
+        MergedArea
+    }
 
     public bool Clickable
     {
@@ -45,5 +63,11 @@ public class ButtonController : MonoBehaviour
                 EventManager.OnGetMoney?.Invoke(money);
             });
         }
+    }
+
+    public void MergeUpgrade()
+    {
+        _buttons[transform.GetSiblingIndex()].SetActive(true);
+        _buttons[transform.GetSiblingIndex() - 1].SetActive(false);
     }
 }
