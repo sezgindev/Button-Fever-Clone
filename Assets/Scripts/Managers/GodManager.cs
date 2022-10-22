@@ -9,12 +9,14 @@ public class GodManager : MonoBehaviour
     private const int _buttonLayer = 6;
     private const int _buttonMergeArea = 7;
     private const int _selectedButtonLayer = 8;
+    private const int _boardTile = 9;
     private Camera _camera;
     public Vector3 DefaultButtonPos;
     public ButtonController SelectedButton;
     private bool _isDragable = false;
     [SerializeField] private LayerMask _layerMask;
     public static float Income = 1.0f;
+    private bool _isClick = false;
 
     private void Awake()
     {
@@ -31,9 +33,11 @@ public class GodManager : MonoBehaviour
             {
                 if (hit.collider.gameObject.layer == _buttonLayer)
                 {
-                    Debug.Log("aaa");
-                    DefaultButtonPos = hit.collider.transform.localPosition;
-                    SelectedButton = hit.collider.gameObject.GetComponent<ButtonController>();
+                    _isClick = true;
+                    DefaultButtonPos = hit.collider.transform.position;
+                    DefaultButtonPos.y = 0.07077199f;
+                    SelectedButton = hit.collider.gameObject.transform.parent.GetComponent<ButtonController>();
+                    SelectedButton.ButtonSelected();
                 }
             }
         }
@@ -42,11 +46,16 @@ public class GodManager : MonoBehaviour
         {
             if (SelectedButton == null) return;
             DragButton();
+
+            if (_isClick && !_isDragable && SelectedButton.Clickable)
+            {
+                EventManager.OnButtonClick?.Invoke();
+                _isClick = false;
+            }
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            EventManager.OnButtonClick?.Invoke();
             if (SelectedButton == null) return;
             _isDragable = false;
             RaycastHit hit;
@@ -58,10 +67,24 @@ public class GodManager : MonoBehaviour
                 {
                     ButtonDropMergeArea(hit.collider.transform.position, hit.collider.gameObject);
                 }
+
+                if (hit.collider.gameObject.layer == _boardTile)
+                {
+                    var tile = hit.collider.GetComponent<TileController>();
+                    if (tile.IsEmpty)
+                    {
+                        SelectedButton.DropBoardTile(tile);
+                        SelectedButton = null;
+                    }
+                    else
+                    {
+                        SelectedButtonReset();
+                    }
+                }
             }
             else
             {
-                SelectedWorkerReset();
+                SelectedButtonReset();
             }
         }
     }
@@ -95,11 +118,9 @@ public class GodManager : MonoBehaviour
         }
     }
 
-    private void SelectedWorkerReset()
+    private void SelectedButtonReset()
     {
-        SelectedButton.transform.localPosition = DefaultButtonPos;
-        SelectedButton.gameObject.layer = _buttonLayer;
-        SelectedButton.Clickable = true;
+        SelectedButton.ResetPosition(DefaultButtonPos);
         SelectedButton = null;
     }
 
@@ -109,17 +130,21 @@ public class GodManager : MonoBehaviour
         if (area.AreaState == MergeArea.AreaStates.Empty)
         {
             area.AreaSetButton(SelectedButton);
-            SelectedButton.transform.position = areaPos;
-            SelectedButton.gameObject.layer = _buttonLayer;
-            SelectedButton.Clickable = true;
-            SelectedButton.ButtonState = ButtonController.ButtonStates.MergedArea;
+            SelectedButton.DropMergeArea(mergeArea);
             SelectedButton = null;
         }
         else
         {
-            Destroy(SelectedButton.gameObject);
-            area.CurrentButton.MergeUpgrade();
-      
+            if (area.CurrentButton.ButtonMultiply == SelectedButton.ButtonMultiply &&
+                area.CurrentButton != SelectedButton)
+            {
+                Destroy(SelectedButton.gameObject);
+                area.CurrentButton.MergeUpgrade();
+            }
+            else
+            {
+                SelectedButtonReset();
+            }
         }
     }
 }

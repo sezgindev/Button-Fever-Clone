@@ -5,7 +5,7 @@ using UnityEngine;
 public class MergeArea : MonoBehaviour
 {
     public AreaStates AreaState;
-    private ButtonController _currentButton;
+    [SerializeField] private ButtonController _currentButton;
     public ButtonController CurrentButton => _currentButton;
 
     public enum AreaStates
@@ -18,5 +18,11 @@ public class MergeArea : MonoBehaviour
     {
         AreaState = AreaStates.Full;
         _currentButton = button;
+    }
+
+    public void AreaReset()
+    {
+        AreaState = AreaStates.Empty;
+        _currentButton = null;
     }
 }

@@ -7,20 +7,14 @@ using UnityEngine;
 public class ButtonController : MonoBehaviour
 {
     private bool _isClickable = true;
-    private float _multiply = 1.0f;
     private ParticleManager _particleManager;
-    public ButtonTypes ButtonType;
     public ButtonStates ButtonState;
     [SerializeField] private GameObject[] _buttons;
-
-    public enum ButtonTypes
-    {
-        x1,
-        x2,
-        x4,
-        x8,
-        x16
-    }
+    public int ButtonMultiply = 1;
+    private const int _buttonLayer = 6;
+    public TileController CurrentTile = null;
+    public MergeArea CurrentMergeArea = null;
+    private float _defaultYPos = 0.07077199f;
 
     public enum ButtonStates
     {
@@ -34,12 +28,6 @@ public class ButtonController : MonoBehaviour
         set => _isClickable = value;
     }
 
-
-    private void Awake()
-    {
-        _particleManager = FindObjectOfType<ParticleManager>();
-    }
-
     private void OnEnable()
     {
         EventManager.OnButtonClick += Click;
@@ -50,12 +38,20 @@ public class ButtonController : MonoBehaviour
         EventManager.OnButtonClick -= Click;
     }
 
+    private void Awake()
+    {
+        _particleManager = FindObjectOfType<ParticleManager>();
+    }
+
+
     private void Click()
     {
-        if (_isClickable)
+        if (_isClickable && ButtonState == ButtonStates.OnBoard)
         {
             var defaultPos = transform.localPosition;
-            float money = _multiply * GodManager.Income;
+            defaultPos.y = _defaultYPos;
+            transform.localPosition = defaultPos;
+            float money = ButtonMultiply * GodManager.Income;
             transform.DOLocalMoveY(defaultPos.y - .7f, .1f).SetEase(Ease.Linear).OnComplete(() =>
             {
                 transform.DOLocalMoveY(defaultPos.y, .1f).SetEase(Ease.Linear);
@@ -69,5 +65,49 @@ public class ButtonController : MonoBehaviour
     {
         _buttons[transform.GetSiblingIndex()].SetActive(true);
         _buttons[transform.GetSiblingIndex() - 1].SetActive(false);
+        ButtonMultiply *= 2;
+    }
+
+    public void DropMergeArea(GameObject area)
+    {
+        transform.parent = area.transform;
+        CurrentMergeArea = area.GetComponent<MergeArea>();
+        transform.position = area.transform.position;
+        gameObject.layer = _buttonLayer;
+        Clickable = false;
+        ButtonState = ButtonStates.MergedArea;
+    }
+
+    public void DropBoardTile(TileController tile)
+    {
+        transform.parent = tile.transform;
+        transform.position = tile.transform.position;
+        gameObject.layer = _buttonLayer;
+        tile.TileAvailability(false);
+        CurrentTile = tile;
+        Clickable = true;
+        ButtonState = ButtonStates.OnBoard;
+    }
+
+    public void ResetPosition(Vector3 pos)
+    {
+        transform.localPosition = pos;
+        gameObject.layer = _buttonLayer;
+        Clickable = true;
+    }
+
+    public void ButtonSelected()
+    {
+        if (CurrentTile != null)
+        {
+            CurrentTile.TileAvailability(true);
+            CurrentTile = null;
+        }
+
+        if (CurrentMergeArea != null)
+        {
+            CurrentMergeArea.AreaReset();
+            CurrentMergeArea = null;
+        }
     }
 }
