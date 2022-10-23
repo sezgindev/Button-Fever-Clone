@@ -5803,6 +5803,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _buttonPrefab: {fileID: 7778034695436887946, guid: 7a470b4538343b44a8d061efaae884bc, type: 3}
+  _buttonHolder: {fileID: 1776422375}
 --- !u!1001 &2131282322
 PrefabInstance:
   m_ObjectHideFlags: 0

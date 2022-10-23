@@ -70,7 +70,6 @@ public class ButtonController : MonoBehaviour
 
     public void DropMergeArea(GameObject area)
     {
-        transform.parent = area.transform;
         CurrentMergeArea = area.GetComponent<MergeArea>();
         transform.position = area.transform.position;
         gameObject.layer = _buttonLayer;
@@ -80,7 +79,6 @@ public class ButtonController : MonoBehaviour
 
     public void DropBoardTile(TileController tile)
     {
-        transform.parent = tile.transform;
         transform.position = tile.transform.position;
         gameObject.layer = _buttonLayer;
         tile.TileAvailability(false);
