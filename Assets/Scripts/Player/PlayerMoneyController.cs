@@ -5,14 +5,6 @@ using UnityEngine;
 
 public class PlayerMoneyController : MonoBehaviour
 {
-    private float _money = 10;
-
-    public float Money
-    {
-        get => _money;
-        private set { _money = value; }
-    }
-
     private void OnEnable()
     {
         EventManager.OnGetMoney += MoneyIncrease;
@@ -26,7 +18,7 @@ public class PlayerMoneyController : MonoBehaviour
 
     private void MoneyIncrease(float quantity)
     {
-        Money += quantity;
+        PersistData.Instance.Money += quantity;
         EventManager.UpdateUIElements?.Invoke();
     }
 }

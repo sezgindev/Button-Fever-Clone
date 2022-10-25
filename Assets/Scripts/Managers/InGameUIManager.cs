@@ -7,7 +7,7 @@ using UnityEngine;
 public class InGameUIManager : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _playerMoneyText;
-    private PlayerMoneyController _playerMoneyController;
+
 
     private void OnEnable()
     {
@@ -21,13 +21,12 @@ public class InGameUIManager : MonoBehaviour
 
     private void Awake()
     {
-        _playerMoneyController = FindObjectOfType<PlayerMoneyController>();
         SetMoneyText();
     }
 
     private void SetMoneyText()
     {
-        float money = _playerMoneyController.Money;
+        float money = PersistData.Instance.Money;
         _playerMoneyText.SetText("$" + money);
     }
 }

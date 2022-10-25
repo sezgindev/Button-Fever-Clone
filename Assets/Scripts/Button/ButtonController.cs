@@ -63,8 +63,18 @@ public class ButtonController : MonoBehaviour
 
     public void MergeUpgrade()
     {
-        _buttons[transform.GetSiblingIndex()].SetActive(true);
-        _buttons[transform.GetSiblingIndex() - 1].SetActive(false);
+        int newActiveIndex = 0;
+        for (int i = 0; i < _buttons.Length; i++)
+        {
+            if (_buttons[i].activeSelf)
+            {
+                newActiveIndex = i + 1;
+                if (newActiveIndex > _buttons.Length) newActiveIndex = _buttons.Length;
+            }
+        }
+
+        _buttons[newActiveIndex].SetActive(true);
+        _buttons[newActiveIndex - 1].SetActive(false);
         ButtonMultiply *= 2;
     }
 
