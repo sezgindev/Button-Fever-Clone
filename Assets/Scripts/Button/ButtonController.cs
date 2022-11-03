@@ -6,15 +6,17 @@ using UnityEngine;
 
 public class ButtonController : MonoBehaviour
 {
+    [SerializeField] private GameObject[] _buttons;
+    private const int _buttonLayer = 6;
+    private const int _tile = 9;
+    private float _defaultYPos = 0.07077199f;
     private bool _isClickable = true;
     private ParticleManager _particleManager;
     public ButtonStates ButtonState;
-    [SerializeField] private GameObject[] _buttons;
     public int ButtonMultiply = 1;
-    private const int _buttonLayer = 6;
     public TileController CurrentTile = null;
     public MergeArea CurrentMergeArea = null;
-    private float _defaultYPos = 0.07077199f;
+
 
     public enum ButtonStates
     {
@@ -44,6 +46,9 @@ public class ButtonController : MonoBehaviour
     }
 
 
+
+
+
     private void Click()
     {
         if (_isClickable && ButtonState == ButtonStates.OnBoard)
@@ -52,7 +57,7 @@ public class ButtonController : MonoBehaviour
             defaultPos.y = _defaultYPos;
             transform.localPosition = defaultPos;
             float money = ButtonMultiply * GodManager.Income;
-            transform.DOLocalMoveY(defaultPos.y - .7f, .1f).SetEase(Ease.Linear).OnComplete(() =>
+            transform.DOLocalMoveY(defaultPos.y - .3f, .1f).SetEase(Ease.Linear).OnComplete(() =>
             {
                 transform.DOLocalMoveY(defaultPos.y, .1f).SetEase(Ease.Linear);
                 _particleManager.MoneyParticle(transform.position + Vector3.up * .5f, money);
@@ -90,6 +95,9 @@ public class ButtonController : MonoBehaviour
     public void DropBoardTile(TileController tile)
     {
         transform.position = tile.transform.position;
+        var pos = transform.localPosition;
+        pos.y = _defaultYPos;
+        transform.localPosition = pos;
         gameObject.layer = _buttonLayer;
         tile.TileAvailability(false);
         CurrentTile = tile;

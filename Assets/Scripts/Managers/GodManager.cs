@@ -17,6 +17,7 @@ public class GodManager : MonoBehaviour
     [SerializeField] private LayerMask _layerMask;
     public static float Income = 1.0f;
     private bool _isClick = false;
+    private GameObject _closestObject;
 
     private void Awake()
     {
@@ -34,7 +35,7 @@ public class GodManager : MonoBehaviour
                 if (hit.collider.gameObject.layer == _buttonLayer)
                 {
                     _isClick = true;
-                    DefaultButtonPos = hit.collider.transform.position;
+                    DefaultButtonPos = hit.collider.transform.parent.position;
                     DefaultButtonPos.y = 0.07077199f;
                     SelectedButton = hit.collider.gameObject.transform.parent.GetComponent<ButtonController>();
                     SelectedButton.ButtonSelected();
@@ -68,17 +69,33 @@ public class GodManager : MonoBehaviour
                     ButtonDropMergeArea(hit.collider.transform.position, hit.collider.gameObject);
                 }
 
-                if (hit.collider.gameObject.layer == _boardTile)
+                if (hit.collider.gameObject.layer == _boardTile && !SelectedButton.Clickable)
                 {
-                    var tile = hit.collider.GetComponent<TileController>();
-                    if (tile.IsEmpty)
+                    float distance = 10000;
+                    List<GameObject> tiles = new List<GameObject>();
+                    var TileChecks = SelectedButton.GetComponentsInChildren<ButtonTileCheck>();
+
+                    foreach (var tileCheck in TileChecks)
                     {
-                        SelectedButton.DropBoardTile(tile);
-                        SelectedButton = null;
+                        tiles.Add(tileCheck.CheckTileAvailabilty());
                     }
-                    else
+
+                    foreach (var currentTile in tiles)
                     {
-                        SelectedButtonReset();
+                        float dist = Vector3.Distance(SelectedButton.transform.position,
+                            currentTile.transform.position);
+                        if (dist <= distance) _closestObject = currentTile;
+                        if (!currentTile.GetComponent<TileController>().IsEmpty)
+                        {
+                            SelectedButtonReset();
+                        }
+                    }
+
+                    if (SelectedButton != null)
+                    {
+                        SelectedButton.DropBoardTile(_closestObject.GetComponent<TileController>());
+                        _closestObject = null;
+                        SelectedButton = null;
                     }
                 }
             }
